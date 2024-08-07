@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NER Prediction</title>
+</head>
+<body>
+    <h1>Named Entity Recognition</h1>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <label for="text">Enter text:</label><br>
+        <textarea id="text" name="text" rows="4" cols="50"></textarea><br><br>
+        <label for="file">Or upload a file:</label><br>
+        <input type="file" id="file" name="file"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <div id="result">
+        {% if entities %}
+        <h2>Entities:</h2>
+        <ul>
+            {% for entity in entities %}
+            <li>{{ entity[0] }}: {{ entity[1] }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
