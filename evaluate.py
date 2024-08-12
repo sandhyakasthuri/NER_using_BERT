@@ -54,12 +54,34 @@ def predict_entities(text):
     inputs = tokenizer(text.split(), is_split_into_words=True, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
         outputs = model(**inputs)
+    
     logits = outputs.logits
     predictions = torch.argmax(logits, dim=2)
-    predicted_labels = [reverse_label_map[label_id.item()] for label_id in predictions[0]]
+    
+    predicted_labels = [label_map[label_id.item()] for label_id in predictions[0]]
     tokens = tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])
-    entities = [(token, label) for token, label in zip(tokens, predicted_labels) if label != 'O']
-    return entities
+    
+    # Combine subword tokens and return them with their corresponding labels
+    entities = []
+    current_word = ""
+    current_label = ""
+
+    for token, label in zip(tokens, predicted_labels):
+        if token.startswith("##"):
+            current_word += token[2:]
+        else:
+            if current_word:
+                entities.append((current_word, current_label))  # Add the previous word and its label as a tuple
+            current_word = token
+            current_label = label
+    
+    if current_word:
+        entities.append((current_word, current_label))  # Add the last word and its label
+
+    # Remove special tokens and prepare output in the desired format
+    entities = [(word, label) for word, label in entities if word not in ['[CLS]', '[SEP]', '[PAD]']]
+    
+    return entities  # Return a list of tuples
 
 @app.route('/')
 def index():
@@ -67,7 +89,8 @@ def index():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'file' in request.files:
+    text = ""
+    if 'file' in request.files and request.files['file'].filename != '':
         file = request.files['file']
         if file.filename.endswith('.pdf'):
             text = extract_text_from_pdf(file)
@@ -77,7 +100,7 @@ def predict():
             text = file.read().decode('utf-8')
         else:
             return jsonify({'error': 'Unsupported file type'}), 400
-    else:
+    elif 'text' in request.form and request.form['text'] != '':
         text = request.form.get('text')
     
     if not text:
@@ -85,7 +108,8 @@ def predict():
 
     text = preprocess_text(text)
     entities = predict_entities(text)
-    return jsonify({'entities': entities})
+    return jsonify({'entities': entities})  # Ensure this is a list of tuples
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False, host='0.0.0.0')

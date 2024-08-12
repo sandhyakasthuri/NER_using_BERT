@@ -3,25 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <title>NER Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .entities {
+            margin-top: 20px;
+        }
+        .entities ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .entities li {
+            background-color: #f2f2f2;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Named Entity Recognition</h1>
-    <form action="/predict" method="post" enctype="multipart/form-data">
-        <label for="text">Enter text:</label><br>
-        <textarea id="text" name="text" rows="4" cols="50"></textarea><br><br>
-        <label for="file">Or upload a file:</label><br>
-        <input type="file" id="file" name="file"><br><br>
-        <input type="submit" value="Submit">
-    </form>
-    <div id="result">
-        {% if entities %}
-        <h2>Entities:</h2>
-        <ul>
-            {% for entity in entities %}
-            <li>{{ entity[0] }}: {{ entity[1] }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+    <div class="container">
+        <h1>Named Entity Recognition</h1>
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <label for="text">Enter text:</label><br>
+            <textarea id="text" name="text" rows="4" cols="50"></textarea><br><br>
+            <label for="file">Or upload a file:</label><br>
+            <input type="file" id="file" name="file"><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        <div class="entities">
+            {% if entities %}
+            <h2>Entities:</h2>
+            <ul>
+                {% for entity in entities %}
+                <li>{{ entity[0] }}: {{ entity[1] }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
